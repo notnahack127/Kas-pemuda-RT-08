@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Pemuda RT</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1077/1077114.png">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif}
+    body{background:#f1f5f9;color:#1e293b;line-height:1.5;-webkit-tap-highlight-color:transparent}
+    .container{max-width:480px;margin:0 auto;padding:16px;padding-bottom:50px}
+    header{background:linear-gradient(135deg,#0f766e,#0d9488);color:white;padding:18px 16px;text-align:center;position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+    h1{font-size:1.35rem;font-weight:700}
+    .card{background:white;border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 4px 12px rgba(0,0,0,.05)}
+    .btn{display:inline-block;background:#0f766e;color:white;border:none;padding:13px 16px;border-radius:12px;cursor:pointer;font-size:15px;font-weight:600;margin:4px;transition:.15s}
+    .btn:active{transform:scale(.97)}
+    .btn-red{background:#dc2626}
+    .btn-gray{background:#64748b}
+    .btn-orange{background:#ea580c}
+    .btn-full{width:100%;padding:15px;margin:6px 0}
+    input,select{width:100%;padding:13px;margin:6px 0 14px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:16px;background:#f8fafc}
+    input:focus,select:focus{outline:none;border-color:#0d9488;background:white}
+    label{font-weight:600;font-size:14px;color:#334155}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:12px 8px;text-align:left;border-bottom:1px solid #f1f5f9}
+    th{background:#f8fafc;font-weight:600;color:#475569}
+    .menu{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .menu .btn{margin:0;padding:18px 8px;font-size:14px}
+    .hidden{display:none!important}
+    .badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+    .lunas{background:#dcfce7;color:#166534}
+    .belum{background:#fee2e2;color:#991b1b}
+    .back{margin-bottom:16px}
+    .login-box{max-width:400px;margin:25px auto}
+    .badge-admin{background:#fef3c7;color:#92400e;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:600}
+    .badge-tamu{background:#e2e8f0;color:#475569;padding:5px 12px;border-radius:20px;font-size:13px}
+    .empty{text-align:center;color:#94a3b8;padding:30px 10px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Pemuda RT + Iuran</h1>
+    <div id="statusLogin" style="margin-top:8px"></div>
+  </header>
+
+  <div class="container">
+
+    <!-- LOGIN -->
+    <div id="login" class="card login-box">
+      <h2 style="text-align:center;margin-bottom:20px">Masuk Aplikasi</h2>
+      <label>Password Admin</label>
+      <input type="password" id="password" placeholder="Masukkan password" enterkeyhint="done">
+      <button class="btn btn-full" onclick="login()">Masuk sebagai Admin</button>
+      <button class="btn btn-gray btn-full" onclick="masukTamu()">Masuk sebagai Tamu</button>
+      <p style="font-size:13px;color:#64748b;margin-top:18px;text-align:center">
+        Password default: <b>admin123</b>
+      </p>
+    </div>
+
+    <!-- MENU -->
+    <div id="menu" class="card hidden">
+      <div class="menu">
+        <button class="btn" id="btnTambah" onclick="show('tambah')">+ Tambah</button>
+        <button class="btn" onclick="show('daftar')">Daftar</button>
+        <button class="btn" id="btnIuran" onclick="show('iuran')">Catat Iuran</button>
+        <button class="btn" onclick="show('riwayat')">Riwayat</button>
+        <button class="btn" onclick="show('belum')">Belum Bayar</button>
+        <button class="btn btn-red" id="btnHapus" onclick="show('hapus')">Hapus</button>
+      </div>
+      <button class="btn btn-orange btn-full" id="btnGantiPass" onclick="show('gantiPass')" style="margin-top:14px">Ganti Password</button>
+      <button class="btn btn-gray btn-full" onclick="logout()">Keluar</button>
+    </div>
+
+    <!-- FORM TAMBAH / EDIT -->
+    <div id="tambah" class="card hidden">
+      <button class="btn btn-gray back" onclick="show('menu')">← Kembali</button>
+      <h2 id="judulForm">Tambah Pemuda</h2>
+      <input type="hidden" id="editId">
+      <label>Nama Lengkap</label>
+      <input type="text" id="nama" placeholder="Nama lengkap">
+      <label>Alamat (RT/RW)</label>
+      <input type="text" id="alamat" placeholder="RT 05 / RW 02">
+      <label>No. HP / WhatsApp</label>
+      <input type="tel" id="nohp" placeholder="08xxxxxxxxxx">
+      <button class="btn btn-full" onclick="simpanPemuda()">Simpan Data</button>
+    </div>
+
+    <!-- DAFTAR -->
+    <div id="daftar" class="card hidden">
+      <button class="btn btn-gray back" onclick="show('menu')">← Kembali</button>
+      <h2>Daftar Pemuda</h2>
+      <div id="tabelPemuda"></div>
+    </div>
+
+    <!-- IURAN -->
+    <div id="iuran" class="card hidden">
+      <button class="btn btn-gray back" onclick="show('menu')">← Kembali</button>
+      <h2>Catat Iuran</h2>
+      <label>Pilih Pemuda</label>
+      <select id="pilihPemuda"></select>
+      <label>Bulan (contoh: 2025-09)</label>
+      <input type="text" id="bulan" placeholder="2025-09">
+      <label>Jumlah (Rp)</label>
+      <input type="number" id="jumlah" value="10000">
+      <label>Status</label>
+      <select id="status">
+        <option value="lunas">Lunas</option>
+        <option value="belum">Belum</option>
+      </select>
+      <label>Keterangan</label>
+      <input type="text" id="keterangan" placeholder="Opsional">
+      <button class="btn btn-full" onclick="catatIuran()">Simpan Iuran</button>
+    </div>
+
+    <!-- RIWAYAT -->
+    <div id="riwayat" class="card hidden">
+      <button class="btn btn-gray back" onclick="show('menu')">← Kembali</button>
+      <h2>Riwayat Iuran</h2>
+      <label>Filter Bulan</label>
+      <input type="text" id="filterBulan" placeholder="Kosongkan = semua">
+      <button class="btn" onclick="tampilRiwayat()">Tampilkan</button>
+      <div id="tabelIuran" style="margin-top:16px"></div>
+    </div>
+
+    <!-- BELUM BAYAR -->
+    <div id="belum" class="card hidden">
+      <button class="btn btn-gray back" onclick="show('menu')">← Kembali</button>
+      <h2>Belum Bayar</h2>
+      <label>Bulan</label>
+      <input type="text" id="bulanBelum" placeholder="2025-09">
+      <button class="btn" onclick="laporanBelum()">Cek Sekarang</button>
+      <div id="tabelBelum" style="margin-top:16px"></div>
+    </div>
+
+    <!-- HAPUS -->
+    <div id="hapus" class="card hidden">
+      <button class="btn btn-gray back" onclick="show('menu')">← Kembali</button>
+      <h2>Hapus Data</h2>
+      <div id="tabelHapus"></div>
+    </div>
+
+    <!-- GANTI PASSWORD -->
+    <div id="gantiPass" class="card hidden">
+      <button class="btn btn-gray back" onclick="show('menu')">← Kembali</button>
+      <h2>Ganti Password Admin</h2>
+      <label>Password Lama</label>
+      <input type="password" id="passLama">
+      <label>Password Baru</label>
+      <input type="password" id="passBaru">
+      <label>Ulangi Password Baru</label>
+      <input type="password" id="passBaru2">
+      <button class="btn btn-full" onclick="gantiPassword()">Simpan Password Baru</button>
+    </div>
+
+  </div>
+
+<script>
+  // ================== PENGATURAN ==================
+  let passwordAdmin = localStorage.getItem('passwordRT') || "admin123";
+  let isAdmin = false;
+  let data = JSON.parse(localStorage.getItem('pemudaRT')) || { pemuda: [], iuran: [] };
+
+  function simpanData() {
+    localStorage.setItem('pemudaRT', JSON.stringify(data));
+  }
+
+  // ================== LOGIN ==================
+  function login() {
+    const input = document.getElementById('password').value;
+    if (input === passwordAdmin) {
+      isAdmin = true;
+      localStorage.setItem('isAdminRT', 'true');
+      setelahLogin();
+    } else {
+      alert('Password salah!');
+    }
+  }
+
+  function masukTamu() {
+    isAdmin = false;
+    localStorage.setItem('isAdminRT', 'false');
+    setelahLogin();
+  }
+
+  function logout() {
+    isAdmin = false;
+    localStorage.removeItem('isAdminRT');
+    document.getElementById('password').value = '';
+    show('login');
+    updateStatus();
+  }
+
+  function setelahLogin() {
+    updateStatus();
+    show('menu');
+    aturTombol();
+  }
+
+  function updateStatus() {
+    document.getElementById('statusLogin').innerHTML = isAdmin 
+      ? `<span class="badge-admin">Admin Mode</span>` 
+      : `<span class="badge-tamu">Mode Tamu</span>`;
+  }
+
+  function aturTombol() {
+    const display = isAdmin ? 'block' : 'none';
+    ['btnTambah','btnIuran','btnHapus','btnGantiPass'].forEach(id => {
+      document.getElementById(id).style.display = display;
+    });
+  }
+
+  // ================== GANTI PASSWORD ==================
+  function gantiPassword() {
+    const lama = document.getElementById('passLama').value;
+    const baru = document.getElementById('passBaru').value;
+    const baru2 = document.getElementById('passBaru2').value;
+
+    if (lama !== passwordAdmin) return alert('Password lama salah!');
+    if (baru.length < 4) return alert('Password baru minimal 4 karakter');
+    if (baru !== baru2) return alert('Password baru tidak sama!');
+
+    passwordAdmin = baru;
+    localStorage.setItem('passwordRT', baru);
+    alert('Password berhasil diganti!\nPassword baru: ' + baru);
+    document.getElementById('passLama').value = '';
+    document.getElementById('passBaru').value = '';
+    document.getElementById('passBaru2').value = '';
+    show('menu');
+  }
+
+  // ================== NAVIGASI ==================
+  function show(halaman) {
+    document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+    document.getElementById(halaman).classList.remove('hidden');
+
+    if (halaman === 'daftar') tampilPemuda();
+    if (halaman === 'iuran') isiSelect();
+    if (halaman === 'hapus') tampilHapus();
+    if (halaman === 'tambah') resetForm();
+  }
+
+  function resetForm() {
+    document.getElementById('judulForm').innerText = 'Tambah Pemuda';
+    document.getElementById('editId').value = '';
+    document.getElementById('nama').value = '';
+    document.getElementById('alamat').value = '';
+    document.getElementById('nohp').value = '';
+  }
+
+  // ================== PEMUDA ==================
+  function simpanPemuda() {
+    if (!isAdmin) return alert('Hanya Admin!');
+    const id = document.getElementById('editId').value;
+    const nama = document.getElementById('nama').value.trim();
+    const alamat = document.getElementById('alamat').value.trim();
+    const nohp = document.getElementById('nohp').value.trim();
+
+    if (!nama) return alert('Nama wajib diisi');
+
+    if (id) {
+      const p = data.pemuda.find(x => x.id == id);
+      if (p) { p.nama = nama; p.alamat = alamat; p.nohp = nohp; }
+      alert('Data berhasil diubah');
+    } else {
+      data.pemuda.push({
+        id: Date.now(),
+        nama, alamat, nohp,
+        tanggal: new Date().toISOString().slice(0,10)
+      });
+      alert('Data berhasil ditambahkan');
+    }
+    simpanData();
+    show('menu');
+  }
+
+  function editPemuda(id) {
+    if (!isAdmin) return;
+    const p = data.pemuda.find(x => x.id == id);
+    if (!p) return;
+    document.getElementById('editId').value = p.id;
+    document.getElementById('nama').value = p.nama;
+    document.getElementById('alamat').value = p.alamat || '';
+    document.getElementById('nohp').value = p.nohp || '';
+    document.getElementById('judulForm').innerText = 'Edit Data Pemuda';
+    show('tambah');
+  }
+
+  function tampilPemuda() {
+    let html = `<table><thead><tr><th>Nama</th><th>Alamat</th><th>HP</th>`;
+    if (isAdmin) html += `<th></th>`;
+    html += `</tr></thead><tbody>`;
+
+    data.pemuda.forEach(p => {
+      html += `<tr>
+        <td>${p.nama}</td>
+        <td>${p.alamat||'-'}</td>
+        <td>${p.nohp||'-'}</td>`;
+      if (isAdmin) {
+        html += `<td><button class="btn btn-orange" style="padding:6px 10px;font-size:12px" onclick="editPemuda(${p.id})">Edit</button></td>`;
+      }
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+    if (data.pemuda.length === 0) html = '<div class="empty">Belum ada data pemuda</div>';
+    document.getElementById('tabelPemuda').innerHTML = html;
+  }
+
+  // ================== IURAN ==================
+  function isiSelect() {
+    document.getElementById('pilihPemuda').innerHTML = data.pemuda
+      .map(p => `<option value="${p.id}">${p.nama}</option>`).join('');
+  }
+
+  function catatIuran() {
+    if (!isAdmin) return alert('Hanya Admin!');
+    const idPemuda = +document.getElementById('pilihPemuda').value;
+    const bulan = document.getElementById('bulan').value.trim();
+    const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
+    const status = document.getElementById('status').value;
+    const keterangan = document.getElementById('keterangan').value.trim();
+
+    if (!bulan) return alert('Bulan wajib diisi');
+
+    const idx = data.iuran.findIndex(i => i.idPemuda === idPemuda && i.bulan === bulan);
+    const item = {
+      idPemuda, bulan, jumlah, status, keterangan,
+      tanggalBayar: status === 'lunas' ? new Date().toISOString().slice(0,10) : null
+    };
+
+    if (idx >= 0) data.iuran[idx] = item;
+    else data.iuran.push(item);
+
+    simpanData();
+    alert('Iuran berhasil disimpan');
+    show('menu');
+  }
+
+  function tampilRiwayat() {
+    const filter = document.getElementById('filterBulan').value.trim();
+    let list = filter ? data.iuran.filter(i => i.bulan === filter) : [...data.iuran].reverse();
+
+    let html = `<table><thead><tr><th>Nama</th><th>Bulan</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>`;
+    list.forEach(i => {
+      const p = data.pemuda.find(x => x.id === i.idPemuda);
+      html += `<tr>
+        <td>${p ? p.nama : '-'}</td>
+        <td>${i.bulan}</td>
+        <td>Rp ${i.jumlah.toLocaleString('id')}</td>
+        <td><span class="badge ${i.status}">${i.status}</span></td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    if (list.length === 0) html = '<div class="empty">Tidak ada data</div>';
+    document.getElementById('tabelIuran').innerHTML = html;
+  }
+
+  function laporanBelum() {
+    const bulan = document.getElementById('bulanBelum').value.trim();
+    if (!bulan) return alert('Isi bulan dulu');
+
+    const lunas = data.iuran.filter(i => i.bulan === bulan && i.status === 'lunas').map(i => i.idPemuda);
+    const belum = data.pemuda.filter(p => !lunas.includes(p.id));
+
+    let html = `<table><thead><tr><th>Nama</th><th>No HP</th></tr></thead><tbody>`;
+    belum.forEach(p => {
+      html += `<tr><td>${p.nama}</td><td>${p.nohp||'-'}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+
+    if (belum.length === 0) {
+      html = '<div class="empty" style="color:#16a34a;font-weight:600">Semua sudah lunas! 🎉</div>';
+    }
+    document.getElementById('tabelBelum').innerHTML = html;
+  }
+
+  // ================== HAPUS ==================
+  function tampilHapus() {
+    let html = `<table><thead><tr><th>Nama</th><th></th></tr></thead><tbody>`;
+    data.pemuda.forEach(p => {
+      html += `<tr>
+        <td>${p.nama}</td>
+        <td><button class="btn btn-red" style="padding:6px 12px;font-size:13px" onclick="hapus(${p.id})">Hapus</button></td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    if (data.pemuda.length === 0) html = '<div class="empty">Belum ada data</div>';
+    document.getElementById('tabelHapus').innerHTML = html;
+  }
+
+  function hapus(id) {
+    if (!isAdmin) return;
+    if (!confirm('Yakin hapus data ini?')) return;
+    data.pemuda = data.pemuda.filter(p => p.id !== id);
+    data.iuran = data.iuran.filter(i => i.idPemuda !== id);
+    simpanData();
+    alert('Data dihapus');
+    tampilHapus();
+  }
+
+  // ================== START ==================
+  if (localStorage.getItem('isAdminRT') === 'true') {
+    isAdmin = true;
+    setelahLogin();
+  } else {
+    show('login');
+  }
+
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+</script>
+</body>
+</html>
